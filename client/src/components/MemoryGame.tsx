@@ -4,6 +4,7 @@ import { generateGameCards } from '../lib/colorThemes';
 import GameHeader from './GameHeader';
 import ColorThemeSelector from './ColorThemeSelector';
 import GameBoard from './GameBoard';
+import CompletionAnimation from './CompletionAnimation';
 
 function shuffleArray<T>(array: T[]): T[] {
   const newArray = [...array];
@@ -59,6 +60,10 @@ export default function MemoryGame() {
   const handleReset = () => {
     console.log('Game reset');
     initializeGame(gameState.selectedTheme);
+  };
+
+  const handleAnimationEnd = () => {
+    console.log('Completion animation finished');
   };
 
   const handleCardClick = useCallback((clickedCard: GameCard) => {
@@ -139,6 +144,9 @@ export default function MemoryGame() {
     });
   }, [gameState.flippedCards]);
 
+  // Get all matched cards for the completion animation
+  const matchedCards = gameState.cards.filter(card => card.isMatched);
+
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="space-y-8">
@@ -169,6 +177,13 @@ export default function MemoryGame() {
           />
         </div>
       </div>
+
+      {/* Completion Animation */}
+      <CompletionAnimation
+        isComplete={gameState.isComplete}
+        matchedCards={matchedCards}
+        onAnimationEnd={handleAnimationEnd}
+      />
     </div>
   );
 }
