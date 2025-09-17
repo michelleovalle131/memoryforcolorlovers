@@ -6,9 +6,10 @@ interface ColorCardProps {
   card: GameCard;
   onClick: (card: GameCard) => void;
   disabled?: boolean;
+  showName?: boolean;
 }
 
-export default function ColorCard({ card, onClick, disabled = false }: ColorCardProps) {
+export default function ColorCard({ card, onClick, disabled = false, showName = true }: ColorCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleClick = () => {
@@ -18,7 +19,7 @@ export default function ColorCard({ card, onClick, disabled = false }: ColorCard
     onClick(card);
     
     // Reset animation state after flip completes
-    setTimeout(() => setIsAnimating(false), 600);
+    setTimeout(() => setIsAnimating(false), 800);
   };
 
   return (
@@ -27,8 +28,7 @@ export default function ColorCard({ card, onClick, disabled = false }: ColorCard
         "relative w-36 h-44 cursor-pointer select-none transition-all duration-300",
         "hover:scale-105 hover:shadow-lg",
         disabled && "cursor-not-allowed opacity-60",
-        card.isMatched && "animate-match-success",
-        card.isError && "animate-error-flash border-4"
+        card.isMatched && "animate-match-success"
       )}
       onClick={handleClick}
       data-testid={`card-${card.id}`}
@@ -36,7 +36,7 @@ export default function ColorCard({ card, onClick, disabled = false }: ColorCard
     >
       <div
         className={cn(
-          "relative w-full h-full transition-transform duration-600 preserve-3d",
+          "relative w-full h-full transition-transform duration-800 preserve-3d",
           card.isFlipped && "rotate-y-180"
         )}
         style={{
@@ -58,7 +58,10 @@ export default function ColorCard({ card, onClick, disabled = false }: ColorCard
 
         {/* Card Front */}
         <div
-          className="absolute inset-0 rounded-lg shadow-lg backface-hidden bg-white border border-card-border"
+          className={cn(
+            "absolute inset-0 rounded-lg shadow-lg backface-hidden bg-white border border-card-border",
+            card.isError && "animate-error"
+          )}
           style={{ 
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
@@ -74,12 +77,14 @@ export default function ColorCard({ card, onClick, disabled = false }: ColorCard
           {/* Color Information */}
           <div className="p-3 h-20 flex flex-col justify-between">
             <div>
-              <h3 
-                className="font-medium text-sm text-gray-900 leading-tight"
-                data-testid={`color-name-${card.color.id}`}
-              >
-                {card.color.name}
-              </h3>
+              {showName && (
+                <h3 
+                  className="font-medium text-sm text-gray-900 leading-tight"
+                  data-testid={`color-name-${card.color.id}`}
+                >
+                  {card.color.name}
+                </h3>
+              )}
               <p 
                 className="font-mono text-xs text-gray-600 mt-1"
                 data-testid={`color-hex-${card.color.id}`}

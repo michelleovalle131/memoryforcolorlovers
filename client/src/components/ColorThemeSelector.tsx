@@ -6,21 +6,43 @@ import { Button } from '@/components/ui/button';
 interface ColorThemeSelectorProps {
   selectedTheme: ColorTheme;
   onThemeChange: (theme: ColorTheme) => void;
+  showColorNames: boolean;
+  onToggleColorNames: (show: boolean) => void;
   disabled?: boolean;
 }
 
 export default function ColorThemeSelector({
   selectedTheme,
   onThemeChange,
+  showColorNames,
+  onToggleColorNames,
   disabled = false
 }: ColorThemeSelectorProps) {
   const themes = Object.keys(colorThemes) as ColorTheme[];
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-        Choose Color Theme
-      </h3>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          Choose Color Theme
+        </h3>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Show Names</span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onToggleColorNames(!showColorNames)}
+            disabled={disabled}
+            className={cn(
+              "relative",
+              showColorNames && "bg-primary/10"
+            )}
+          >
+            {showColorNames ? "On" : "Off"}
+          </Button>
+        </div>
+      </div>
       
       <div className="flex flex-wrap gap-3">
         {themes.map((theme) => {

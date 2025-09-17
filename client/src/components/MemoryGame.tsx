@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, GameCard, ColorTheme } from '../types/game';
+import { GameState, GameCard, ColorTheme, BoardSize, boardSizeConfig } from '../types/game';
 import { generateGameCards } from '../lib/colorThemes';
 import GameHeader from './GameHeader';
 import ColorThemeSelector from './ColorThemeSelector';
+import BoardSizeSelector from './BoardSizeSelector';
 import GameBoard from './GameBoard';
 import CompletionAnimation from './CompletionAnimation';
 
@@ -24,12 +25,30 @@ export default function MemoryGame() {
     isComplete: false,
     selectedTheme: 'blues'
   });
+  
+  const [timer, setTimer] = useState<number>(0);
+  const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const [showColorNames, setShowColorNames] = useState<boolean>(true);
+  const [boardSize, setBoardSize] = useState<BoardSize>('medium');
+  
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning && !gameState.isComplete) {
+      interval = setInterval(() => {
+        setTimer(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, gameState.isComplete]);
 
-  const initializeGame = useCallback((theme: ColorTheme) => {
-    const colors = generateGameCards(theme);
-    const shuffledColors = shuffleArray(colors);
+  const initializeGame = useCallback((theme: ColorTheme, size: BoardSize = boardSize) => {
+    const requiredPairs = boardSizeConfig[size].pairs;
+    const colors = generateGameCards(theme).slice(0, requiredPairs);
+    const cardPairs = [...colors, ...colors]; // Double the cards to create pairs
+    const shuffledCards = shuffleArray(cardPairs);
     
-    const cards: GameCard[] = shuffledColors.map((color, index) => ({
+    const cards: GameCard[] = shuffledCards.map((color, index) => ({
       id: `${color.id}-${index}`,
       color,
       isFlipped: false,
@@ -45,7 +64,7 @@ export default function MemoryGame() {
       isComplete: false,
       selectedTheme: theme
     });
-  }, []);
+  }, [boardSize]);
 
   // Initialize game on mount
   useEffect(() => {
@@ -54,11 +73,19 @@ export default function MemoryGame() {
 
   const handleThemeChange = (theme: ColorTheme) => {
     console.log('Theme changed to:', theme);
-    initializeGame(theme);
+    initializeGame(theme, boardSize);
+  };
+
+  const handleSizeChange = (size: BoardSize) => {
+    console.log('Board size changed to:', size);
+    setBoardSize(size);
+    initializeGame(gameState.selectedTheme, size);
   };
 
   const handleReset = () => {
     console.log('Game reset');
+    setTimer(0);
+    setIsTimerRunning(false);
     initializeGame(gameState.selectedTheme);
   };
 
@@ -69,6 +96,11 @@ export default function MemoryGame() {
   const handleCardClick = useCallback((clickedCard: GameCard) => {
     if (clickedCard.isFlipped || clickedCard.isMatched || gameState.flippedCards.length >= 2) {
       return;
+    }
+
+    // Start timer on first card flip
+    if (!isTimerRunning) {
+      setIsTimerRunning(true);
     }
 
     console.log('Card clicked:', clickedCard.color.name);
@@ -96,7 +128,7 @@ export default function MemoryGame() {
           );
           
           const newMatches = prevState.matches + 1;
-          const isComplete = newMatches === 6; // 6 pairs total
+          const isComplete = newMatches === boardSizeConfig[boardSize].pairs;
           
           return {
             ...prevState,
@@ -115,17 +147,30 @@ export default function MemoryGame() {
               : card
           );
 
+          // Flip back first card
           setTimeout(() => {
             setGameState(currentState => ({
               ...currentState,
               cards: currentState.cards.map(card =>
-                card.id === firstCard.id || card.id === secondCard.id
+                card.id === firstCard.id
+                  ? { ...card, isFlipped: false, isError: false }
+                  : card
+              )
+            }));
+          }, 1000);
+
+          // Flip back second card with a slight delay
+          setTimeout(() => {
+            setGameState(currentState => ({
+              ...currentState,
+              cards: currentState.cards.map(card =>
+                card.id === secondCard.id
                   ? { ...card, isFlipped: false, isError: false }
                   : card
               ),
               flippedCards: []
             }));
-          }, 1500);
+          }, 1200);
 
           return {
             ...prevState,
@@ -154,18 +199,32 @@ export default function MemoryGame() {
         <GameHeader
           matches={gameState.matches}
           attempts={gameState.attempts}
+          timer={timer}
           isComplete={gameState.isComplete}
           selectedTheme={gameState.selectedTheme}
           onReset={handleReset}
         />
 
-        {/* Theme Selector */}
-        <div className="max-w-4xl mx-auto">
-          <ColorThemeSelector
-            selectedTheme={gameState.selectedTheme}
-            onThemeChange={handleThemeChange}
-            disabled={gameState.flippedCards.length > 0}
-          />
+        {/* Game Controls */}
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1">
+              <ColorThemeSelector
+                selectedTheme={gameState.selectedTheme}
+                onThemeChange={handleThemeChange}
+                showColorNames={showColorNames}
+                onToggleColorNames={setShowColorNames}
+                disabled={gameState.flippedCards.length > 0}
+              />
+            </div>
+            <div className="flex-1">
+              <BoardSizeSelector
+                selectedSize={boardSize}
+                onSizeChange={handleSizeChange}
+                disabled={gameState.flippedCards.length > 0}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Game Board */}
@@ -174,6 +233,7 @@ export default function MemoryGame() {
             cards={gameState.cards}
             onCardClick={handleCardClick}
             disabled={gameState.isComplete}
+            showColorNames={showColorNames}
           />
         </div>
       </div>
