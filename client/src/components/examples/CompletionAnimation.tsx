@@ -32,6 +32,11 @@ export default function CompletionAnimationExample() {
     setIsComplete(false);
   };
 
+  const handleNewGame = () => {
+    console.log('New Game button clicked');
+    setIsComplete(false);
+  };
+
   return (
     <div className="p-8 bg-background min-h-screen">
       <div className="text-center space-y-4">
@@ -45,6 +50,7 @@ export default function CompletionAnimationExample() {
         isComplete={isComplete}
         matchedCards={mockMatchedCards}
         onAnimationEnd={handleAnimationEnd}
+        onNewGame={handleNewGame}
       />
     </div>
   );

@@ -183,6 +183,7 @@ export default function MemoryGame() {
         isComplete={gameState.isComplete}
         matchedCards={matchedCards}
         onAnimationEnd={handleAnimationEnd}
+        onNewGame={handleReset}
       />
     </div>
   );

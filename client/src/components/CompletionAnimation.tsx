@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
 import { GameCard } from '../types/game';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Play } from 'lucide-react';
 
 interface CompletionAnimationProps {
   isComplete: boolean;
   matchedCards: GameCard[];
   onAnimationEnd?: () => void;
+  onNewGame?: () => void;
 }
 
 export default function CompletionAnimation({ 
   isComplete, 
   matchedCards, 
-  onAnimationEnd 
+  onAnimationEnd,
+  onNewGame 
 }: CompletionAnimationProps) {
   const [showAnimation, setShowAnimation] = useState(false);
   const [animationPhase, setAnimationPhase] = useState(0); // 0: hidden, 1: gathering, 2: showing palette
@@ -93,6 +97,22 @@ export default function CompletionAnimation({
               </div>
             </div>
           ))}
+        </div>
+
+        {/* New Game Button */}
+        <div className={cn(
+          "absolute bottom-1/4 transition-all duration-1000 ease-out",
+          animationPhase >= 2 ? "opacity-100 transform translate-y-0" : "opacity-0 transform translate-y-10"
+        )}>
+          <Button
+            onClick={onNewGame}
+            size="lg"
+            className="gap-2 px-8 py-3 text-lg font-semibold shadow-xl"
+            data-testid="button-new-game-celebration"
+          >
+            <Play className="w-5 h-5" />
+            Start New Game
+          </Button>
         </div>
 
         {/* Sparkle Effects */}
