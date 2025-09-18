@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameCard, ColorTheme, BoardSize, boardSizeConfig } from '../types/game';
-import { generateGameCards } from '../lib/colorThemes';
+import { colorThemes } from '../lib/colorThemes';
 import GameHeader from './GameHeader';
 import ColorThemeSelector from './ColorThemeSelector';
 import BoardSizeSelector from './BoardSizeSelector';
@@ -28,24 +28,67 @@ export default function MemoryGame() {
   
   const [timer, setTimer] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
   const [showColorNames, setShowColorNames] = useState<boolean>(true);
   const [boardSize, setBoardSize] = useState<BoardSize>('medium');
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
   
   // Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isTimerRunning && !gameState.isComplete) {
+    if (isTimerRunning && !gameState.isComplete && !isPaused) {
       interval = setInterval(() => {
         setTimer(prev => prev + 1);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning, gameState.isComplete]);
+  }, [isTimerRunning, gameState.isComplete, isPaused]);
+
+  // Inactivity detection - auto pause after 15 seconds
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    
+    if (isTimerRunning && !isPaused && !gameState.isComplete) {
+      timeout = setTimeout(() => {
+        setIsPaused(true);
+        console.log('Game auto-paused due to inactivity');
+      }, 15000);
+    }
+    
+    return () => clearTimeout(timeout);
+  }, [lastActivity, isTimerRunning, isPaused, gameState.isComplete]);
+
+  // Update activity timestamp on user interaction
+  const updateActivity = useCallback(() => {
+    setLastActivity(Date.now());
+    if (isPaused) {
+      setIsPaused(false);
+      console.log('Game resumed due to activity');
+    }
+  }, [isPaused]);
+
+  // Add mouse movement detection for unpausing
+  useEffect(() => {
+    const handleMouseMove = () => {
+      if (isPaused) {
+        updateActivity();
+      }
+    };
+
+    if (isPaused) {
+      document.addEventListener('mousemove', handleMouseMove);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isPaused, updateActivity]);
 
   const initializeGame = useCallback((theme: ColorTheme, size: BoardSize = boardSize) => {
     const requiredPairs = boardSizeConfig[size].pairs;
-    const colors = generateGameCards(theme).slice(0, requiredPairs);
-    const cardPairs = [...colors, ...colors]; // Double the cards to create pairs
+    const baseColors = colorThemes[theme];
+    const selectedColors = baseColors.slice(0, requiredPairs);
+    const cardPairs = [...selectedColors, ...selectedColors]; // Double the cards to create pairs
     const shuffledCards = shuffleArray(cardPairs);
     
     const cards: GameCard[] = shuffledCards.map((color, index) => ({
@@ -73,11 +116,13 @@ export default function MemoryGame() {
 
   const handleThemeChange = (theme: ColorTheme) => {
     console.log('Theme changed to:', theme);
+    updateActivity();
     initializeGame(theme, boardSize);
   };
 
   const handleSizeChange = (size: BoardSize) => {
     console.log('Board size changed to:', size);
+    updateActivity();
     setBoardSize(size);
     initializeGame(gameState.selectedTheme, size);
   };
@@ -86,6 +131,8 @@ export default function MemoryGame() {
     console.log('Game reset');
     setTimer(0);
     setIsTimerRunning(false);
+    setIsPaused(false);
+    setLastActivity(Date.now());
     initializeGame(gameState.selectedTheme);
   };
 
@@ -93,7 +140,11 @@ export default function MemoryGame() {
     console.log('Completion animation finished');
   };
 
+
   const handleCardClick = useCallback((clickedCard: GameCard) => {
+    // Update activity timestamp first (this will unpause if paused)
+    updateActivity();
+
     if (clickedCard.isFlipped || clickedCard.isMatched || gameState.flippedCards.length >= 2) {
       return;
     }
@@ -187,7 +238,7 @@ export default function MemoryGame() {
         flippedCards: newFlippedCards
       };
     });
-  }, [gameState.flippedCards]);
+  }, [gameState.flippedCards, updateActivity, isTimerRunning]);
 
   // Get all matched cards for the completion animation
   const matchedCards = gameState.cards.filter(card => card.isMatched);
@@ -202,6 +253,7 @@ export default function MemoryGame() {
           timer={timer}
           isComplete={gameState.isComplete}
           selectedTheme={gameState.selectedTheme}
+          isPaused={isPaused}
           onReset={handleReset}
         />
 
@@ -232,7 +284,7 @@ export default function MemoryGame() {
           <GameBoard
             cards={gameState.cards}
             onCardClick={handleCardClick}
-            disabled={gameState.isComplete}
+            disabled={gameState.isComplete || isPaused}
             showColorNames={showColorNames}
           />
         </div>

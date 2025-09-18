@@ -13,13 +13,12 @@ export default function GameBoard({ cards, onCardClick, disabled = false, showCo
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div 
-        className={cn(
-          "grid gap-4 md:gap-6 place-items-center",
-          cards.length <= 8 && "grid-cols-2 md:grid-cols-4",
-          cards.length <= 12 && cards.length > 8 && "grid-cols-3 md:grid-cols-4",
-          cards.length <= 16 && cards.length > 12 && "grid-cols-4",
-          cards.length > 16 && "grid-cols-4 md:grid-cols-6"
-        )}
+        className="grid grid-cols-4 place-items-center"
+        style={{ 
+          gap: '20px',
+          width: 'fit-content',
+          margin: '0 auto'
+        }}
         data-testid="game-board"
       >
         {cards.map((card) => (

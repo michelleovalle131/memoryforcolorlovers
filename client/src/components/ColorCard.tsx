@@ -25,14 +25,18 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
   return (
     <div 
       className={cn(
-        "relative w-36 h-44 cursor-pointer select-none transition-all duration-300",
-        "hover:scale-105 hover:shadow-lg",
+        "relative cursor-pointer select-none transition-all duration-300",
+        "hover:scale-105",
         disabled && "cursor-not-allowed opacity-60",
         card.isMatched && "animate-match-success"
       )}
       onClick={handleClick}
       data-testid={`card-${card.id}`}
-      style={{ perspective: '1000px' }}
+      style={{ 
+        perspective: '1000px',
+        width: '220px',
+        height: '280px'
+      }}
     >
       <div
         className={cn(
@@ -46,10 +50,10 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
       >
         {/* Card Back */}
         <div
-          className="absolute inset-0 rounded-lg shadow-lg backface-hidden bg-gradient-to-br from-card to-muted border border-card-border"
+          className="absolute inset-0 rounded-lg backface-hidden bg-gradient-to-br from-card to-muted border-2 border-gray-400"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className="h-full w-full flex items-center justify-center rounded-lg bg-gradient-to-br from-card via-muted to-card border border-card-border">
+          <div className="h-full w-full flex items-center justify-center rounded-lg bg-gradient-to-br from-card via-muted to-card">
             <div className="text-muted-foreground font-mono text-sm tracking-wider">
               SWATCH
             </div>
@@ -59,7 +63,7 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
         {/* Card Front */}
         <div
           className={cn(
-            "absolute inset-0 rounded-lg shadow-lg backface-hidden bg-white border border-card-border",
+            "absolute inset-0 rounded-lg backface-hidden bg-white border-2 border-gray-400 flex flex-col",
             card.isError && "animate-error"
           )}
           style={{ 
@@ -69,13 +73,21 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
         >
           {/* Color Swatch */}
           <div 
-            className="h-24 w-full rounded-t-lg border-b border-gray-200"
-            style={{ backgroundColor: card.color.hex }}
+            className="w-full rounded-t-lg border-b border-gray-200 flex-1"
+            style={{ 
+              backgroundColor: card.color.hex
+            }}
             data-testid={`color-swatch-${card.color.id}`}
           />
           
           {/* Color Information */}
-          <div className="p-3 h-20 flex flex-col justify-between">
+          <div 
+            className="bg-white flex flex-col justify-between"
+            style={{ 
+              height: 'auto',
+              padding: '20px 20px 20px 20px'
+            }}
+          >
             <div>
               {showName && (
                 <h3 

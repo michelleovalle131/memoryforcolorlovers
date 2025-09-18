@@ -9,6 +9,7 @@ interface GameHeaderProps {
   timer: number;
   isComplete: boolean;
   selectedTheme: ColorTheme;
+  isPaused: boolean;
   onReset: () => void;
 }
 
@@ -18,7 +19,8 @@ export default function GameHeader({
   timer,
   isComplete,
   selectedTheme,
-  onReset 
+  isPaused,
+  onReset
 }: GameHeaderProps) {
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
@@ -88,6 +90,16 @@ export default function GameHeader({
             </div>
           )}
         </div>
+
+        {/* Pause Message */}
+        {isPaused && !isComplete && (
+          <div className="text-center mt-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 border border-muted-foreground/20 rounded-lg text-muted-foreground text-sm">
+              <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-pulse"></div>
+              Game is paused
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
