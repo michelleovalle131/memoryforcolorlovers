@@ -12,15 +12,15 @@ export interface GameCard {
   isError: boolean;
 }
 
-export type ColorTheme = 'reds' | 'blues' | 'greens' | 'yellows' | 'oranges' | 'mixed';
+export type ColorTheme = 'reds' | 'blues' | 'greens' | 'yellows' | 'oranges' | 'violets' | 'mixed';
 
 export type BoardSize = 'small' | 'medium' | 'large' | 'xl';
 
 export const boardSizeConfig = {
-  small: { pairs: 4, label: 'S - 8 Cards' },
-  medium: { pairs: 6, label: 'M - 12 Cards' },
-  large: { pairs: 8, label: 'L - 16 Cards' },
-  xl: { pairs: 12, label: 'XL - 24 Cards' }
+  small: { pairs: 4, label: '8' },
+  medium: { pairs: 6, label: '12' },
+  large: { pairs: 8, label: '16' },
+  xl: { pairs: 12, label: '24' }
 } as const;
 
 export interface GameState {

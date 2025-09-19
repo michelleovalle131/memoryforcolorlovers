@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameCard, ColorTheme, BoardSize, boardSizeConfig } from '../types/game';
 import { colorThemes } from '../lib/colorThemes';
+import IntroPage from './IntroPage';
 import GameHeader from './GameHeader';
 import ColorThemeSelector from './ColorThemeSelector';
-import BoardSizeSelector from './BoardSizeSelector';
 import GameBoard from './GameBoard';
 import CompletionAnimation from './CompletionAnimation';
 
@@ -14,6 +14,28 @@ function shuffleArray<T>(array: T[]): T[] {
     [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
   }
   return newArray;
+}
+
+// Generate random grid colors once - now for 5x10 grid (50 dots)
+function generateGridColors(): string[] {
+  const colors = [
+    // 400 values - vibrant colors only
+    'border-red-400', 'border-orange-400', 'border-amber-400', 'border-yellow-400',
+    'border-lime-400', 'border-green-400', 'border-emerald-400', 'border-teal-400',
+    'border-cyan-400', 'border-sky-400', 'border-blue-400', 'border-indigo-400',
+    'border-violet-400', 'border-purple-400', 'border-fuchsia-400', 'border-pink-400',
+    'border-rose-400',
+    
+    // 500 values - vibrant colors only
+    'border-red-500', 'border-orange-500', 'border-amber-500', 'border-yellow-500',
+    'border-lime-500', 'border-green-500', 'border-emerald-500', 'border-teal-500',
+    'border-cyan-500', 'border-sky-500', 'border-blue-500', 'border-indigo-500',
+    'border-violet-500', 'border-purple-500', 'border-fuchsia-500', 'border-pink-500',
+    'border-rose-500'
+  ];
+  
+  // Generate 6 random colors for the concentric circles (one per circle)
+  return Array.from({ length: 6 }, () => colors[Math.floor(Math.random() * colors.length)]);
 }
 
 export default function MemoryGame() {
@@ -32,6 +54,8 @@ export default function MemoryGame() {
   const [showColorNames, setShowColorNames] = useState<boolean>(true);
   const [boardSize, setBoardSize] = useState<BoardSize>('medium');
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [gridColors, setGridColors] = useState<string[]>([]);
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
   
   // Timer effect
   useEffect(() => {
@@ -47,14 +71,14 @@ export default function MemoryGame() {
   // Inactivity detection - auto pause after 15 seconds
   useEffect(() => {
     let timeout: NodeJS.Timeout;
-    
+
     if (isTimerRunning && !isPaused && !gameState.isComplete) {
       timeout = setTimeout(() => {
         setIsPaused(true);
         console.log('Game auto-paused due to inactivity');
       }, 15000);
     }
-    
+
     return () => clearTimeout(timeout);
   }, [lastActivity, isTimerRunning, isPaused, gameState.isComplete]);
 
@@ -99,6 +123,9 @@ export default function MemoryGame() {
       isError: false
     }));
 
+    // Generate new grid colors for this game
+    const newGridColors = generateGridColors();
+
     setGameState({
       cards,
       flippedCards: [],
@@ -107,12 +134,14 @@ export default function MemoryGame() {
       isComplete: false,
       selectedTheme: theme
     });
+    
+    setGridColors(newGridColors);
   }, [boardSize]);
 
-  // Initialize game on mount
-  useEffect(() => {
-    initializeGame(gameState.selectedTheme);
-  }, []);
+  // Initialize game on mount - removed to show intro page first
+  // useEffect(() => {
+  //   initializeGame(gameState.selectedTheme);
+  // }, []);
 
   const handleThemeChange = (theme: ColorTheme) => {
     console.log('Theme changed to:', theme);
@@ -136,10 +165,15 @@ export default function MemoryGame() {
     initializeGame(gameState.selectedTheme);
   };
 
+  const handleStartGame = () => {
+    console.log('Game started');
+    setGameStarted(true);
+    initializeGame(gameState.selectedTheme);
+  };
+
   const handleAnimationEnd = () => {
     console.log('Completion animation finished');
   };
-
 
   const handleCardClick = useCallback((clickedCard: GameCard) => {
     // Update activity timestamp first (this will unpause if paused)
@@ -158,8 +192,8 @@ export default function MemoryGame() {
 
     setGameState(prevState => {
       const newFlippedCards = [...prevState.flippedCards, clickedCard];
-      const newCards = prevState.cards.map(card => 
-        card.id === clickedCard.id 
+      const newCards = prevState.cards.map(card =>
+        card.id === clickedCard.id
           ? { ...card, isFlipped: true, isError: false }
           : { ...card, isError: false }
       );
@@ -168,7 +202,7 @@ export default function MemoryGame() {
       if (newFlippedCards.length === 2) {
         const [firstCard, secondCard] = newFlippedCards;
         const isMatch = firstCard.color.hex === secondCard.color.hex;
-        
+
         if (isMatch) {
           // Cards match
           console.log('Match found!', firstCard.color.name);
@@ -177,10 +211,10 @@ export default function MemoryGame() {
               ? { ...card, isMatched: true }
               : card
           );
-          
+
           const newMatches = prevState.matches + 1;
           const isComplete = newMatches === boardSizeConfig[boardSize].pairs;
-          
+
           return {
             ...prevState,
             cards: matchedCards,
@@ -238,10 +272,15 @@ export default function MemoryGame() {
         flippedCards: newFlippedCards
       };
     });
-  }, [gameState.flippedCards, updateActivity, isTimerRunning]);
+  }, [gameState.flippedCards, updateActivity, isTimerRunning, boardSize]);
 
   // Get all matched cards for the completion animation
   const matchedCards = gameState.cards.filter(card => card.isMatched);
+
+  // Show intro page if game hasn't started
+  if (!gameStarted) {
+    return <IntroPage onStartGame={handleStartGame} />;
+  }
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
@@ -259,24 +298,15 @@ export default function MemoryGame() {
 
         {/* Game Controls */}
         <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-1">
-              <ColorThemeSelector
-                selectedTheme={gameState.selectedTheme}
-                onThemeChange={handleThemeChange}
-                showColorNames={showColorNames}
-                onToggleColorNames={setShowColorNames}
-                disabled={gameState.flippedCards.length > 0}
-              />
-            </div>
-            <div className="flex-1">
-              <BoardSizeSelector
-                selectedSize={boardSize}
-                onSizeChange={handleSizeChange}
-                disabled={gameState.flippedCards.length > 0}
-              />
-            </div>
-          </div>
+          <ColorThemeSelector
+            selectedTheme={gameState.selectedTheme}
+            onThemeChange={handleThemeChange}
+            showColorNames={showColorNames}
+            onToggleColorNames={setShowColorNames}
+            selectedSize={boardSize}
+            onSizeChange={handleSizeChange}
+            disabled={gameState.flippedCards.length > 0 || isPaused}
+          />
         </div>
 
         {/* Game Board */}
@@ -286,6 +316,7 @@ export default function MemoryGame() {
             onCardClick={handleCardClick}
             disabled={gameState.isComplete || isPaused}
             showColorNames={showColorNames}
+            gridColors={gridColors}
           />
         </div>
       </div>

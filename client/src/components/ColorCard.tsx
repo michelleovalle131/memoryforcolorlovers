@@ -7,23 +7,24 @@ interface ColorCardProps {
   onClick: (card: GameCard) => void;
   disabled?: boolean;
   showName?: boolean;
+  gridColors?: string[];
 }
 
-export default function ColorCard({ card, onClick, disabled = false, showName = true }: ColorCardProps) {
+export default function ColorCard({ card, onClick, disabled = false, showName = true, gridColors = [] }: ColorCardProps) {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const handleClick = () => {
     if (disabled || card.isMatched || isAnimating) return;
-    
+
     setIsAnimating(true);
     onClick(card);
-    
+
     // Reset animation state after flip completes
     setTimeout(() => setIsAnimating(false), 800);
   };
 
   return (
-    <div 
+    <div
       className={cn(
         "relative cursor-pointer select-none transition-all duration-300",
         "hover:scale-105",
@@ -32,7 +33,7 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
       )}
       onClick={handleClick}
       data-testid={`card-${card.id}`}
-      style={{ 
+      style={{
         perspective: '1000px',
         width: '220px',
         height: '280px'
@@ -50,54 +51,85 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
       >
         {/* Card Back */}
         <div
-          className="absolute inset-0 rounded-lg backface-hidden bg-gradient-to-br from-card to-muted border-2 border-gray-400"
+          className="absolute inset-0 rounded-lg backface-hidden bg-stone-50 border border-stone-300 overflow-hidden"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className="h-full w-full flex items-center justify-center rounded-lg bg-gradient-to-br from-card via-muted to-card">
-            <div className="text-muted-foreground font-mono text-sm tracking-wider">
-              SWATCH
-            </div>
+          {/* 6 Concentric Half-Circles */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {Array.from({ length: 6 }).map((_, index) => {
+              const colorClass = gridColors[index] || 'border-gray-400';
+              const size = 120 + index * 45; // Starting at 120px (40px * 3), increasing by 45px each (15px * 3)
+              
+              return (
+                <div
+                  key={`circle-${index}`}
+                  className={`absolute rounded-full border ${colorClass}`}
+                  style={{
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    borderWidth: '1px',
+                    borderBottom: 'none', // Remove bottom border to create half-circle
+                    borderLeft: 'none', // Remove left border
+                    borderRight: 'none', // Remove right border
+                    fill: 'none',
+                    top: '70%', // Position at 70% from top (lower on card)
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                  }}
+                />
+              );
+            })}
+          </div>
+          
+          {/* Text at bottom */}
+          <div 
+            className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
+            style={{ paddingBottom: '20px', paddingLeft: '20px', paddingRight: '20px' }}
+          >
+            <p className="font-mono text-xs text-gray-600 uppercase text-center">
+              Memory for Color Lovers
+            </p>
           </div>
         </div>
 
         {/* Card Front */}
         <div
           className={cn(
-            "absolute inset-0 rounded-lg backface-hidden bg-white border-2 border-gray-400 flex flex-col",
+            "absolute inset-0 rounded-lg backface-hidden bg-white border border-stone-300 flex flex-col",
             card.isError && "animate-error"
           )}
-          style={{ 
+          style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)'
           }}
         >
           {/* Color Swatch */}
-          <div 
+          <div
             className="w-full rounded-t-lg border-b border-gray-200 flex-1"
-            style={{ 
+            style={{
               backgroundColor: card.color.hex
             }}
             data-testid={`color-swatch-${card.color.id}`}
           />
-          
+
           {/* Color Information */}
-          <div 
+          <div
             className="bg-white flex flex-col justify-between"
-            style={{ 
+            style={{
               height: 'auto',
               padding: '20px 20px 20px 20px'
             }}
           >
             <div>
               {showName && (
-                <h3 
+                <h3
                   className="font-medium text-sm text-gray-900 leading-tight"
                   data-testid={`color-name-${card.color.id}`}
                 >
                   {card.color.name}
                 </h3>
               )}
-              <p 
+              <p
                 className="font-mono text-xs text-gray-600 mt-1"
                 data-testid={`color-hex-${card.color.id}`}
               >
@@ -109,24 +141,4 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
       </div>
     </div>
   );
-}
-
-// Custom CSS for 3D flip effect
-const style = `
-  .preserve-3d {
-    transform-style: preserve-3d;
-  }
-  .backface-hidden {
-    backface-visibility: hidden;
-  }
-  .rotate-y-180 {
-    transform: rotateY(180deg);
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = style;
-  document.head.appendChild(styleSheet);
 }

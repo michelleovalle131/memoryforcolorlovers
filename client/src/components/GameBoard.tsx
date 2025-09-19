@@ -7,9 +7,10 @@ interface GameBoardProps {
   onCardClick: (card: GameCard) => void;
   disabled?: boolean;
   showColorNames?: boolean;
+  gridColors?: string[];
 }
 
-export default function GameBoard({ cards, onCardClick, disabled = false, showColorNames = true }: GameBoardProps) {
+export default function GameBoard({ cards, onCardClick, disabled = false, showColorNames = true, gridColors = [] }: GameBoardProps) {
   return (
     <div className="w-full max-w-4xl mx-auto">
       <div 
@@ -28,6 +29,7 @@ export default function GameBoard({ cards, onCardClick, disabled = false, showCo
             onClick={onCardClick}
             disabled={disabled}
             showName={showColorNames}
+            gridColors={gridColors}
           />
         ))}
       </div>

@@ -43,14 +43,15 @@ export default function GameHeader({
         </Button>
       </div>
 
-      <div className="text-center space-y-6">
+      <div className="space-y-6">
         {/* Game Title */}
-        <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight">
-            Memory for Color Lovers
+        <div className="text-left space-y-1" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground tracking-tight">
+            <div className="text-2xl font-mono font-light uppercase">MEMORY FOR</div>
+            <div>Color Lovers</div>
           </h1>
           <p className="text-muted-foreground text-lg">
-            Match beautiful color swatches inspired by professional paint samples
+            Match game inspired by the beauty of colors, drawing inspiration from the paint samples I grew up with alongside my painter dad
           </p>
         </div>
 

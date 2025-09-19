@@ -16,12 +16,10 @@ export default function BoardSizeSelector({
   const sizes = Object.keys(boardSizeConfig) as BoardSize[];
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-        Board Size
-      </h3>
+    <div className="flex items-center gap-2">
+          <span className="font-mono text-xs text-gray-600 uppercase">No. of Cards</span>
       
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         {sizes.map((size) => {
           const config = boardSizeConfig[size];
           const isSelected = selectedSize === size;
@@ -29,17 +27,17 @@ export default function BoardSizeSelector({
           return (
             <Button
               key={size}
-              variant={isSelected ? "default" : "outline"}
+              variant="outline"
               size="sm"
               onClick={() => onSizeChange(size)}
               disabled={disabled}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 h-auto transition-all duration-200",
-                isSelected && "ring-2 ring-primary/20"
+                "px-2 py-1 h-auto transition-all duration-200 bg-stone-50",
+                isSelected && "!border-blue-500 border-2"
               )}
               data-testid={`size-button-${size}`}
             >
-              <span className="text-xs font-medium">
+              <span className="font-mono text-xs text-gray-600 uppercase">
                 {config.label}
               </span>
             </Button>
