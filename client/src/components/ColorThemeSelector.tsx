@@ -12,6 +12,7 @@ interface ColorThemeSelectorProps {
   selectedSize: BoardSize;
   onSizeChange: (size: BoardSize) => void;
   disabled?: boolean;
+  uiColor?: string;
 }
 
 export default function ColorThemeSelector({
@@ -21,7 +22,8 @@ export default function ColorThemeSelector({
   onToggleColorNames,
   selectedSize,
   onSizeChange,
-  disabled = false
+  disabled = false,
+  uiColor = '#1d4ed8'
 }: ColorThemeSelectorProps) {
   const themes = Object.keys(colorThemes) as ColorTheme[];
 
@@ -47,8 +49,9 @@ export default function ColorThemeSelector({
                 disabled={disabled}
                 className={cn(
                   "flex items-center gap-2 px-2 py-1 h-auto transition-all duration-200 bg-stone-50",
-                  isSelected && "!border-blue-500 border-2"
+                  isSelected && "border-2"
                 )}
+                style={isSelected ? { borderColor: uiColor } : {}}
                 data-testid={`theme-button-${theme}`}
               >
                 {/* Color preview dots */}
@@ -78,6 +81,7 @@ export default function ColorThemeSelector({
           selectedSize={selectedSize}
           onSizeChange={onSizeChange}
           disabled={disabled}
+          uiColor={uiColor}
         />
         
         <div className="flex items-center gap-2">
@@ -86,10 +90,11 @@ export default function ColorThemeSelector({
             onClick={() => onToggleColorNames(!showColorNames)}
             disabled={disabled}
             className={cn(
-              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-              showColorNames ? "bg-blue-500" : "bg-gray-200",
+              "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
+              showColorNames ? "" : "bg-gray-200",
               disabled && "opacity-50 cursor-not-allowed"
             )}
+            style={showColorNames ? { backgroundColor: uiColor } : {}}
           >
             <span
               className={cn(

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { GameState, GameCard, ColorTheme, BoardSize, boardSizeConfig } from '../types/game';
 import { colorThemes } from '../lib/colorThemes';
-import IntroPage from './IntroPage';
 import GameHeader from './GameHeader';
 import ColorThemeSelector from './ColorThemeSelector';
 import GameBoard from './GameBoard';
@@ -38,7 +37,12 @@ function generateGridColors(): string[] {
   return Array.from({ length: 6 }, () => colors[Math.floor(Math.random() * colors.length)]);
 }
 
-export default function MemoryGame() {
+
+interface MemoryGameProps {
+  buttonColor?: string;
+}
+
+export default function MemoryGame({ buttonColor = '#1d4ed8' }: MemoryGameProps) {
   const [gameState, setGameState] = useState<GameState>({
     cards: [],
     flippedCards: [],
@@ -55,7 +59,6 @@ export default function MemoryGame() {
   const [boardSize, setBoardSize] = useState<BoardSize>('medium');
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [gridColors, setGridColors] = useState<string[]>([]);
-  const [gameStarted, setGameStarted] = useState<boolean>(false);
   
   // Timer effect
   useEffect(() => {
@@ -138,10 +141,10 @@ export default function MemoryGame() {
     setGridColors(newGridColors);
   }, [boardSize]);
 
-  // Initialize game on mount - removed to show intro page first
-  // useEffect(() => {
-  //   initializeGame(gameState.selectedTheme);
-  // }, []);
+  // Initialize game on mount
+  useEffect(() => {
+    initializeGame(gameState.selectedTheme);
+  }, []);
 
   const handleThemeChange = (theme: ColorTheme) => {
     console.log('Theme changed to:', theme);
@@ -165,11 +168,6 @@ export default function MemoryGame() {
     initializeGame(gameState.selectedTheme);
   };
 
-  const handleStartGame = () => {
-    console.log('Game started');
-    setGameStarted(true);
-    initializeGame(gameState.selectedTheme);
-  };
 
   const handleAnimationEnd = () => {
     console.log('Completion animation finished');
@@ -278,12 +276,8 @@ export default function MemoryGame() {
   const matchedCards = gameState.cards.filter(card => card.isMatched);
 
   // Show intro page if game hasn't started
-  if (!gameStarted) {
-    return <IntroPage onStartGame={handleStartGame} />;
-  }
-
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-slate-50 py-8 px-4">
       <div className="space-y-8">
         {/* Game Header */}
         <GameHeader
@@ -306,6 +300,7 @@ export default function MemoryGame() {
             selectedSize={boardSize}
             onSizeChange={handleSizeChange}
             disabled={gameState.flippedCards.length > 0 || isPaused}
+            uiColor={buttonColor}
           />
         </div>
 

@@ -6,12 +6,14 @@ interface BoardSizeSelectorProps {
   selectedSize: BoardSize;
   onSizeChange: (size: BoardSize) => void;
   disabled?: boolean;
+  uiColor?: string;
 }
 
 export default function BoardSizeSelector({
   selectedSize,
   onSizeChange,
-  disabled = false
+  disabled = false,
+  uiColor = '#1d4ed8'
 }: BoardSizeSelectorProps) {
   const sizes = Object.keys(boardSizeConfig) as BoardSize[];
 
@@ -33,8 +35,9 @@ export default function BoardSizeSelector({
               disabled={disabled}
               className={cn(
                 "px-2 py-1 h-auto transition-all duration-200 bg-stone-50",
-                isSelected && "!border-blue-500 border-2"
+                isSelected && "border-2"
               )}
+              style={isSelected ? { borderColor: uiColor } : {}}
               data-testid={`size-button-${size}`}
             >
               <span className="font-mono text-xs text-gray-600 uppercase">

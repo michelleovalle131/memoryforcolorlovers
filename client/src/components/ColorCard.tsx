@@ -51,7 +51,7 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
       >
         {/* Card Back */}
         <div
-          className="absolute inset-0 rounded-lg backface-hidden bg-stone-50 border border-stone-300 overflow-hidden"
+          className="absolute inset-0 rounded-lg backface-hidden bg-white border border-slate-100 overflow-hidden"
           style={{ backfaceVisibility: 'hidden' }}
         >
           {/* 6 Concentric Half-Circles */}
@@ -95,7 +95,7 @@ export default function ColorCard({ card, onClick, disabled = false, showName = 
         {/* Card Front */}
         <div
           className={cn(
-            "absolute inset-0 rounded-lg backface-hidden bg-white border border-stone-300 flex flex-col",
+            "absolute inset-0 rounded-lg backface-hidden bg-white border border-slate-100 flex flex-col",
             card.isError && "animate-error"
           )}
           style={{
